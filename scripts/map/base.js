@@ -8,7 +8,9 @@ define([
       var markers = [];
       
       var $mapContainer = $('.map')[0];
-      var map = new google.maps.Map($mapContainer, {
+      
+      //expose map to global scope
+      map = new google.maps.Map($mapContainer, {
         mapTypeId : google.maps.MapTypeId.SATELLITE,
       });
 
