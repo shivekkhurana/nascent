@@ -12,7 +12,6 @@ define([
           drawingControlOptions: {
             position: google.maps.ControlPosition.BOTTOM_LEFT,
             drawingModes: [
-              google.maps.drawing.OverlayType.CIRCLE,
               google.maps.drawing.OverlayType.POLYGON,
               google.maps.drawing.OverlayType.RECTANGLE
             ]
