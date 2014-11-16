@@ -1,8 +1,7 @@
 define([
-  'jquery', 
-  'underscore',
+  'jquery',  
   'async!https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places,drawing'
-], function ($, _) {
+], function ($) {
   return {
     init : function () {
       var markers = [];
@@ -11,14 +10,11 @@ define([
       
       //expose map to global scope
       map = new google.maps.Map($mapContainer, {
-        mapTypeId : google.maps.MapTypeId.SATELLITE,
+        zoom : 10,
+        zoomControl : true, 
+        mapTypeId : google.maps.MapTypeId.HYBRID,
+        center : new google.maps.LatLng(28.630129, 77.217246)
       });
-
-      
-      var defaultBounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(-33.8902, 151.1759),
-      new google.maps.LatLng(-33.8474, 151.2631));
-      map.fitBounds(defaultBounds);
 
       // Create the search box and link it to the UI element.
       var input = ($('input.place')[0]);
@@ -70,7 +66,7 @@ define([
         map.fitBounds(bounds);
       });
     
-      
+      return map; 
     }
   }
 });
