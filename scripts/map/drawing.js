@@ -1,6 +1,6 @@
 define([
   'jquery',  
-  'async!https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places,drawing'
+  'async!https://maps.googleapis.com/maps/api/js?v=3&libraries=places,drawing&sensor=false'
 ],function ($) {
   var selectedShape;
   return {
@@ -14,6 +14,7 @@ define([
           };
           drawingManager = new google.maps.drawing.DrawingManager({
             drawingControl: true,
+            draggable: true,
             drawingControlOptions: {
               position: google.maps.ControlPosition.BOTTOM_LEFT,
               drawingModes: [
