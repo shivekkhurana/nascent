@@ -25,33 +25,9 @@
     padding-bottom:10;
 }
 
-.reset{
-    width:30%;
-    border:1px solid #ddd;
-    border-right:0;
-    padding:15px 0;
-    background: #f8eee8;
-    color:#333;
-    font:inherit;
-    margin-top: 10px;
-    float:left;
-}
-
 .copy-data {
-    width:70%;
-    border:1px solid #ddd;
-    padding:15px 0;
-    background: #eee;
+    width:60%;
     float:right;
-    color:#333;
-    font:inherit;
-    margin-top: 10px;
-}
-
-.copy-data.enabled {
-    border-color: #3b6e22 #3b6e22 #2c5115;
-    color: #fff;
-    background-color: #69a74e;
 }
 
 .meta {
