@@ -9,7 +9,7 @@ define(function (require) {
         map = mapBase.init();
       });
 
-      var mapDrawing = require(['map/drawing'], function (mapDrawing) {
+      var mapDrawing = require(['map/drawing/tool'], function (mapDrawing) {
         mapDrawing.init(map, drawingManager);
       });
     }
