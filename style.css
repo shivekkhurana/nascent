@@ -30,6 +30,16 @@
     float:right;
 }
 
+.tiles-data {
+    display: none;
+    margin-top: 10px;
+    float: right;
+    height: 30px;
+    width: 60%;
+    padding: 5px 0;
+    margin-right: 10px;
+}
+
 .meta {
     font-size: 10px;
     color:#fff;

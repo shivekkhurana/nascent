@@ -10,6 +10,7 @@ define(
     var pedTiles;
 
     var clearPedTiles = function () {
+      $('.tiles-data').hide();
       _.each(pedTiles, function (tile) { tile.setMap(null);});
       pedTiles = null;
     };
@@ -56,7 +57,6 @@ define(
 
           selectedShape = polygon.overlay;
           selectedShape.type = polygon.type;
-          //pedTiles = ped(polygon.overlay.getPath().getArray(), map);
           pedTiles = ped(polygon.overlay.getPath().getArray(), map);
         };
 
@@ -67,19 +67,16 @@ define(
 
               google.maps.event.addListener(polygon.overlay.getPath(), 'set_at', function() {
                 clearPedTiles();
-                //pedTiles = ped(polygon.overlay.getPath().getArray(), map);
                 pedTiles = ped(polygon.overlay.getPath().getArray(), map);
               });
 
               google.maps.event.addListener(polygon.overlay.getPath(), 'insert_at', function() {
                 clearPedTiles();
-                //pedTiles = ped(polygon.overlay.getPath().getArray(), map);
                 pedTiles = ped(polygon.overlay.getPath().getArray(), map);
               });
 
               google.maps.event.addListener(polygon.overlay.getPath(), 'dragend', function() {
                 clearPedTiles();
-                //pedTiles = ped(polygon.overlay.getPath().getArray(), map);
                 pedTiles = ped(polygon.overlay.getPath().getArray(), map);
               });
             });

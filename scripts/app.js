@@ -12,6 +12,12 @@ define(function (require) {
       var mapDrawing = require(['map/drawing/tool'], function (mapDrawing) {
         mapDrawing.init(map, drawingManager);
       });
+
+      require(['jquery'], function($){
+        $('.copy-data').click(function(){
+          console.log($('.tiles-data').text());
+        });
+      })
     }
   }
 });
