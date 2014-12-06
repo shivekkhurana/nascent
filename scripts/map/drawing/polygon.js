@@ -5,20 +5,17 @@ define(
   function () {
     return {
       draw : function (latLngArray, map) {
-        console.log(latLngArray);
         var polygon = new google.maps.Polygon({
           paths: latLngArray,
           strokeColor: '#1c2de0',
           strokeOpacity: 0.8,
-          strokeWeight: 3,
+          strokeWeight: 0.5,
           fillColor: '#1c2de0',
           fillOpacity: 0.35
         });
 
         polygon.setMap(map);
-        $('.reset').click(function () {
-          polygon.setMap(null);
-        });
+        return polygon;
       }
     }
   }

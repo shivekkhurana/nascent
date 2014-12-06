@@ -50,6 +50,57 @@ define(
     };
 
     //pixelCoordinate = worldCoordinate * Math.pow(2,zoomLevel)
-    return MercatorProjection;
+    var config = {
+      dim : {
+        height : 480,
+        width : 640
+      }, 
+      zoom : 20
+    };
+
+    return {
+      getCorners : function (center, zoom, mapWidth, mapHeight){
+        ///////////////
+        mapWidth = mapWidth || config.dim.width;
+        mapHeight = mapHeight || config.dim.height;
+        zoom = zoom || config.zoom;
+        ///////////////
+
+        var proj = new MercatorProjection();
+        var scale = Math.pow(2,zoom);
+        var centerPx = proj.fromLatLngToPoint(center);
+
+        var sWPoint = {x: (centerPx.x - (mapWidth/2)/ scale) , y: (centerPx.y - (mapHeight/2)/ scale)};
+        var sWLatLon = proj.fromPointToLatLng(sWPoint);
+        
+        var nEPoint = {x: (centerPx.x + (mapWidth/2)/ scale) , y: (centerPx.y + (mapHeight/2)/ scale)};
+        var nELatLon = proj.fromPointToLatLng(nEPoint);
+
+        return [
+          new google.maps.LatLng(nELatLon.lat(), sWLatLon.lng()),
+          nELatLon,
+          new google.maps.LatLng(sWLatLon.lat(), nELatLon.lng()),
+          sWLatLon,
+        ];
+      },
+
+      getCenter : function (lowerLeft, zoom, mapWidth, mapHeight) {
+        ///////////////
+        mapWidth = mapWidth || config.dim.width;
+        mapHeight = mapHeight || config.dim.height;
+        zoom = zoom || config.zoom;
+        ///////////////
+
+        var proj = new MercatorProjection();
+        var scale = Math.pow(2, zoom);
+        var llPx = proj.fromLatLngToPoint(lowerLeft);
+
+        var centerPoint = { 
+            x : llPx.x + (mapWidth/2)/scale, 
+            y : llPx.y - (mapHeight/2)/scale
+        };
+        return proj.fromPointToLatLng(centerPoint);
+      },
+    };
   }
 );

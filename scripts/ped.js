@@ -2,91 +2,126 @@ define(
   [
     'underscore',
     'map/marcetorProjection',
-    'map/drawing/ped/polygon',
+    'map/drawing/polygon',
     'async!https://maps.googleapis.com/maps/api/js?v=3&libraries=places,drawing&sensor=false',
   ],
   function (_, mProj, pedPoly) {
-  
-    var config = {
-      dim : {
-        height : 480,
-        width : 640
-      }, 
-      zoom : 20
-    }
-    
-    var getCorners = function (center, zoom, mapWidth, mapHeight){
-      ///////////////
-      mapWidth = mapWidth || config.dim.width;
-      mapHeight = mapHeight || config.dim.height;
-      zoom = zoom || config.zoom;
-      ///////////////
 
-      var proj = new mProj();
-      var scale = Math.pow(2,zoom);
-      var centerPx = proj.fromLatLngToPoint(center);
+    var genPedLines = function (latLngs) {
+      var pedLines = [];
 
-      var sWPoint = {x: (centerPx.x -(mapWidth/2)/ scale) , y: (centerPx.y - (mapHeight/2)/ scale)};
-      var sWLatLon = proj.fromPointToLatLng(sWPoint);
-      
-      var nEPoint = {x: (centerPx.x +(mapWidth/2)/ scale) , y: (centerPx.y + (mapHeight/2)/ scale)};
-      var nELatLon = proj.fromPointToLatLng(nEPoint);
+      _.each(_.range(latLngs.length), function (index) {
+        //get pairs of points 1,2 : 2,3 ... n-1,n : n,0
+        var points = latLngs[index+1] ? [latLngs[index], latLngs[index+1]] : [latLngs[index], latLngs[0]];
+        
+        var p1 = {x : points[0].lng(), y : points[0].lat() };
+        var p2 = {x : points[1].lng(), y : points[1].lat() };
 
-      return [
-        sWLatLon,
-        new google.maps.LatLng(nELatLon.lat(), sWLatLon.lng()),
-        nELatLon,
-        new google.maps.LatLng(sWLatLon.lat(), nELatLon.lng()),
-      ];
-    };
+        var lineFunction = function (x) {
+          return ((p1.y - p2.y)/(p1.x - p2.x))*x + ((p1.x*p2.y - p2.x*p1.y)/(p1.x - p2.x));
+        };
 
-    var getCenter = function (lowerLeft, zoom, mapWidth, mapHeight) {
-      ///////////////
-      mapWidth = mapWidth || config.dim.width;
-      mapHeight = mapHeight || config.dim.height;
-      zoom = zoom || config.zoom;
-      ///////////////
-
-      var proj = new mProj();
-      var scale = Math.pow(2, zoom);
-      var llPx = proj.fromLatLngToPoint(lowerLeft);
-
-      var centerPoint = { 
-          x : llPx.x + (mapWidth/2)/scale, 
-          y : llPx.y + (mapHeight/2)/scale
-      };
-      return proj.fromPointToLatLng(centerPoint);
-    };
-
-    var ped = function (latLongArray, map) {      
-      //////////////////////
-      var origin = {};
-
-      var coordinates = _.map(latLongArray, function (point) {
-        return [point.lng(), point.lat()];
+        pedLines.push({
+          fn : lineFunction, 
+          bounds : {
+            min : _.min([p1.x, p2.x]), 
+            max : _.max([p1.x, p2.x])
+          },
+          //need for debugging
+          points : points
+        });
       });
+      return pedLines;
+    };
 
-      origin.x = _.min(_.map(coordinates, function (c) {
-        return c[0];
+    var getOrigin = function (latLngs) {
+      return new google.maps.LatLng(
+        _.min(_.map(latLngs, function (latLng) {
+          return latLng.lat();
+        })),
+        _.min(_.map(latLngs, function (latLng) {
+          return latLng.lng();
+        }))
+      );
+    };
+
+    var getMaxX = function (latLngs) {
+      return _.max(_.map(latLngs, function (latLng) {
+        return latLng.lng();
       }));
+    };
 
-      origin.y = _.min(_.map(coordinates, function (c) {
-        return c[1];
-      }));
-      //////////////////////
+    var islineInTileBound = function (tileBounds, line) {
+      var tLeft = tileBounds[1].lng(); // k1
+      var tRight = tileBounds[0].lng(); // k2
+      var lMin = line.bounds.min; // x1
+      var lMax = line.bounds.max; // x2
+      return !((lMin < tLeft && lMax < tLeft) || (lMin > tRight && lMax > tRight));
+    };
 
-      var pedOrigin = new google.maps.LatLng(origin.y, origin.x);
-      var staticCenter = getCenter(pedOrigin);
-      
-      console.log('pedOrigin : ' + pedOrigin);
-      console.log('staticCenter : ' + staticCenter);
+    //debugging help
+    var dropMarker = function (latLng, title) {
+      var marker = new google.maps.Marker({
+        position: latLng,
+        map: map,
+        title: title
+      });
+      return marker;
+    };
 
-      var bounds = getCorners(staticCenter);
-      
-      pedPoly.draw(bounds, map);
-      console.log('bounds : ' + bounds);
+    var markLine = function (pedLine, text) {
+      dropMarker(pedLine.points[0], text);
+      dropMarker(pedLine.points[1], text);
+    };
 
-      console.log('getting back same orign : ' + pedOrigin.equals(bounds[0]));
+    var markLineWithBounds = function (pedLine, text, originYLat) {
+      markLine(pedLine, text);
+      dropMarker(new google.maps.LatLng(originYLat, pedLine.bounds.min), 'Min Bound');
+      dropMarker(new google.maps.LatLng(originYLat, pedLine.bounds.max), 'Max Bound');
+    };
+    /////////////////
+
+    var ped = function (latLngs, map) {  
+
+      var pedTiles = []; 
+      var pedLines = genPedLines(latLngs);
+      var origin = getOrigin(latLngs);
+      var maxX = getMaxX(latLngs);
+
+      for (var i=0; i<20; i++){  
+        var staticCenter = mProj.getCenter(origin);
+        //dropMarker(origin);
+        //dropMarker(staticCenter);
+        // check band termination
+        if (origin.lng() > maxX) {
+          dropMarker(origin, 'origin');
+          dropMarker(new google.maps.LatLng(origin.lat(), maxX), 'max x');
+          break;
+        }
+
+        var baseTileBounds = mProj.getCorners(staticCenter);
+
+        var yVals = [];
+
+        _.each(pedLines, function (line) {
+          if (islineInTileBound(baseTileBounds, line)) {
+            yVals.push(line.fn(baseTileBounds[0].lng()));
+            yVals.push(line.fn(baseTileBounds[1].lng()));
+          };
+        });
+
+        // progress on band
+        var tileBounds = baseTileBounds;
+        while (tileBounds[0].lat() < _.max(yVals)) {
+          var pedTile = pedPoly.draw(tileBounds, map);
+          pedTiles.push(pedTile);
+          tileBounds = mProj.getCorners(mProj.getCenter(tileBounds[3]));
+        }
+
+        // shift band condition
+        origin = baseTileBounds[1];
+      }
+      return pedTiles;
     };
 
     return ped;

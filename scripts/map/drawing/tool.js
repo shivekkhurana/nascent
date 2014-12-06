@@ -1,11 +1,19 @@
 define(
   [
     'jquery',
+    'underscore',
     'ped',
     'async!https://maps.googleapis.com/maps/api/js?v=3&libraries=places,drawing&sensor=false'
   ],
-  function ($, ped) {
+  function ($, _, ped) {
     var selectedShape;
+    var pedTiles;
+
+    var clearPedTiles = function () {
+      _.each(pedTiles, function (tile) { tile.setMap(null);});
+      pedTiles = null;
+    };
+
     return {
       init : function (map, drawingManager) {
         var Drawer = {
@@ -31,6 +39,7 @@ define(
           clear : function () {
             if (selectedShape) {
               selectedShape.setMap(null);
+              clearPedTiles();
               drawingManager.setOptions({
                 drawingControl : true
               });
@@ -38,16 +47,17 @@ define(
           }
         };
         
-        var polygonComplete = function (e) {
+        var polygonComplete = function (polygon) {
           // Switch back to non-drawing mode after drawing a shape.
           drawingManager.setDrawingMode(null);
           drawingManager.setOptions({
             drawingControl : false
           });
 
-          selectedShape = e.overlay;
-          selectedShape.type = e.type;
-          ped(e.overlay.getPath().getArray(), map);
+          selectedShape = polygon.overlay;
+          selectedShape.type = polygon.type;
+          //pedTiles = ped(polygon.overlay.getPath().getArray(), map);
+          pedTiles = ped(polygon.overlay.getPath().getArray(), map);
         };
 
         var addOverlayCompleteListener = function (){
@@ -56,15 +66,21 @@ define(
               polygonComplete(polygon);
 
               google.maps.event.addListener(polygon.overlay.getPath(), 'set_at', function() {
-                ped(polygon.overlay.getPath().getArray(), map);
+                clearPedTiles();
+                //pedTiles = ped(polygon.overlay.getPath().getArray(), map);
+                pedTiles = ped(polygon.overlay.getPath().getArray(), map);
               });
 
               google.maps.event.addListener(polygon.overlay.getPath(), 'insert_at', function() {
-                ped(polygon.overlay.getPath().getArray(), map);
+                clearPedTiles();
+                //pedTiles = ped(polygon.overlay.getPath().getArray(), map);
+                pedTiles = ped(polygon.overlay.getPath().getArray(), map);
               });
 
               google.maps.event.addListener(polygon.overlay.getPath(), 'dragend', function() {
-                ped(polygon.overlay.getPath().getArray(), map);
+                clearPedTiles();
+                //pedTiles = ped(polygon.overlay.getPath().getArray(), map);
+                pedTiles = ped(polygon.overlay.getPath().getArray(), map);
               });
             });
           } else {
