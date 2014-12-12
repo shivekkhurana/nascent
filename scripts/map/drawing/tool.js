@@ -48,6 +48,8 @@ define(
             }
           }
         };
+
+        Drawer.initialize();
         
         var polygonComplete = function (polygon) {
           // Switch back to non-drawing mode after drawing a shape.
@@ -87,7 +89,6 @@ define(
         }
 
         addOverlayCompleteListener();
-        google.maps.event.addDomListener(window, 'load', Drawer.initialize );
         google.maps.event.addDomListener($('.reset')[0], 'click', Drawer.clear );
       }
     }
