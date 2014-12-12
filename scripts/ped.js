@@ -61,7 +61,7 @@ define(
     };
 
     var buildUrl = function (tileCenter) {
-      return "http://maps.googleapis.com/maps/api/staticmap?center="+tileCenter.lat()+","+tileCenter.lng()+"&zoom=20&scale=2&size=640x480&maptype=satellite&sensor=false&format=jpg&visual_refresh=true"
+      return "http://maps.googleapis.com/maps/api/staticmap?center="+tileCenter.lat()+","+tileCenter.lng()+"&zoom=18&scale=2&size=640x480&maptype=satellite&sensor=false&format=jpg&visual_refresh=true"
     };
 
     /*
@@ -122,15 +122,17 @@ define(
         // progress on band
         var tileBounds = baseTileBounds;
         while (tileBounds[0].lat() < _.max(yVals)) {
-          $('.tiles-data').show().append(buildUrl(tileBounds[3]));
+          $('.tiles-data').show().append(buildUrl(tileBounds[3]) + '*');
           var pedTile = pedPoly.draw(tileBounds, map);
           pedTiles.push(pedTile);
           tileBounds = mProj.getCorners(mProj.getCenter(tileBounds[3]));
         }
-
         // shift band condition
         origin = baseTileBounds[1];
       }
+
+      var tilesDataStr = $('.tiles-data').text();
+      $('.tiles-data').text(tilesDataStr.substring(0, tilesDataStr.length - 1));
       return pedTiles;
     };
     return ped;

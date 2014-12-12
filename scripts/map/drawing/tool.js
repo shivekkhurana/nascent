@@ -11,6 +11,7 @@ define(
 
     var clearPedTiles = function () {
       $('.tiles-data').hide();
+      $('.tiles-data').text('');
       _.each(pedTiles, function (tile) { tile.setMap(null);});
       pedTiles = null;
     };

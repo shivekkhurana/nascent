@@ -55,7 +55,7 @@ define(
         height : 480,
         width : 640
       }, 
-      zoom : 20
+      zoom : 18
     };
 
     return {
